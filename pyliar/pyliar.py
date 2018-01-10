@@ -4,7 +4,9 @@ import getopt
 import logging
 import sys
 import socket
+import pickle
 
+from messages import *
 from player import Player
 
 
@@ -17,7 +19,7 @@ class PyLiar:
         logging.basicConfig(level='DEBUG',
                             format='[%(levelname)s]  %(asctime)s %(module)s -'
                                    ' %(funcName)s: %(message)s', datefmt="%Y-%m-%d %H:%M:%S")
-        self.remote_addr = "0.0.0.0"
+        self.remote_addr = "127.0.0.1"
         self.port = self.DEFAULT_PORT
         self.sock = None
 
@@ -29,7 +31,7 @@ class PyLiar:
             sys.exit(2)
         for opt, arg in opts:
             if opt == '-h':
-                logging.info("TCImporter.py [--server] [--client=<ip_server>]")
+                logging.info("pyliar.py [--server] [[--client=<ip_server>] [--port=<port>]]")
                 logging.info("Default mode : server")
                 sys.exit()
             elif opt in ('-s', '--server'):
@@ -38,30 +40,17 @@ class PyLiar:
                 self.remote_addr = arg
                 self.server = False
             elif opt in ('-p', '--port'):
-                self.port = arg
-
-    def create_server(self):
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server_address = ('localhost', self.port)
-        self.sock.bind(server_address)
-        logging.info("Starting PyLiar server on {ip_serv}:{port_serv}".format(ip_serv=server_address[0],
-                                                                              port_serv=server_address[1]))
-        self.sock.listen(1)
-        exit_gracefully = False
-        while not exit_gracefully:
-            logging.info("Wainting for connection")
-            connection, client_address = self.sock.accept()
-            data = connection.recv(256).decode('utf-8')
-            logging.info("Received a chunk {data}".format(data=data))
-            exit_gracefully = True
-            connection.close()
-        self.sock.close()
-
+                self.port = int(arg)
 
 if __name__ == '__main__':
     pyliar_inst = PyLiar()
     pyliar_inst.parse_arguments(sys.argv[1:])
     player = Player()
+    message = GuessMessage(2, 5)
+    print(message.to_message_string())
+    test = pickle.loads(message.to_message_string())
+    print(test.type)
     if pyliar_inst.server:
         pyliar_inst.create_server()
+    else:
+        pyliar_inst.connect_server()
