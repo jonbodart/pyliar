@@ -5,6 +5,8 @@ import logging
 import sys
 import socket
 
+from player import Player
+
 
 class PyLiar:
 
@@ -60,5 +62,6 @@ class PyLiar:
 if __name__ == '__main__':
     pyliar_inst = PyLiar()
     pyliar_inst.parse_arguments(sys.argv[1:])
+    player = Player()
     if pyliar_inst.server:
         pyliar_inst.create_server()
