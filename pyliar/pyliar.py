@@ -6,8 +6,7 @@ import sys
 import socket
 import pickle
 
-from messages import *
-from player import Player
+from server import Server
 
 
 class PyLiar:
@@ -45,12 +44,4 @@ class PyLiar:
 if __name__ == '__main__':
     pyliar_inst = PyLiar()
     pyliar_inst.parse_arguments(sys.argv[1:])
-    player = Player()
-    message = GuessMessage(2, 5)
-    print(message.to_message_string())
-    test = pickle.loads(message.to_message_string())
-    print(test.type)
-    if pyliar_inst.server:
-        pyliar_inst.create_server()
-    else:
-        pyliar_inst.connect_server()
+    liar_serv = Server(pyliar_inst.port)
