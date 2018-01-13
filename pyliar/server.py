@@ -16,7 +16,7 @@ class Server:
         self.game.player_amount += 1
         logging.debug("I am in the child thread... - amount {}".format(self.game.player_amount))
         while True:
-            data = client_socket.recv(256).decode('utf-8')
+            data = client_socket.recv(256)
             logging.info("Received a chunk '{data}'".format(data=data))
 
     def __init__(self, port):
@@ -36,15 +36,6 @@ class Server:
             self.handle_sockets(readable)
         self.sock.close()
 
-    def handle_new_connections(self):
-        client_sock, client_address = self.sock.accept()
-        logging.debug("Accepted connection from {}".format(client_address[0]))
-        client_handler = threading.Thread(
-            target=self.handle_client,
-            args=(client_sock,))
-        client_handler.start()
-        # self.client_sockets.append(client_handler)
-
     def handle_sockets(self, sockets):
         for s in sockets:
             if s is self.sock:
@@ -52,3 +43,13 @@ class Server:
                     self.handle_new_connections()
                 else:
                     logging.debug("Here I am...")
+
+    def handle_new_connections(self):
+        client_sock, client_address = self.sock.accept()
+        logging.debug("Accepted connection from {}".format(client_address[0]))
+        client_handler = threading.Thread(
+            target=self.handle_client,
+            args=(client_sock,))
+        client_handler.start()
+        self.client_sockets.append(client_sock)
+
