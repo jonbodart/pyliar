@@ -8,7 +8,7 @@ import pickle
 
 
 from server import Server
-from client import Client
+from player import Player
 
 
 class PyLiar:
@@ -48,5 +48,5 @@ if __name__ == '__main__':
     pyliar_inst.parse_arguments(sys.argv[1:])
     if pyliar_inst.server:
         liar_serv = Server(pyliar_inst.port)
-    # should be Player, child class of Client
-    liar_client = Client(pyliar_inst.remote_addr, pyliar_inst.port)
+    else:
+        liar_client = Player(pyliar_inst.remote_addr, pyliar_inst.port)

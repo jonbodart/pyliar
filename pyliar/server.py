@@ -3,6 +3,7 @@ import logging
 import threading
 import select
 
+from messages import *
 
 class Game:
 
@@ -10,14 +11,18 @@ class Game:
         self.game_started = False
         self.player_amount = 0
 
+
 class Server:
 
     def handle_client(self, client_socket):
         self.game.player_amount += 1
         logging.debug("I am in the child thread... - amount {}".format(self.game.player_amount))
         while True:
-            data = client_socket.recv(256)
+            data = client_socket.recv(1024)
             logging.info("Received a chunk '{data}'".format(data=data))
+            message = decode_message(data)
+            if message is not None:
+                logging.info("Received the following message {message}".format(message=message.to_string()))
 
     def __init__(self, port):
         self.port = port
