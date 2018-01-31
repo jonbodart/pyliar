@@ -23,16 +23,17 @@ class PyLiar:
         self.remote_addr = "127.0.0.1"
         self.port = self.DEFAULT_PORT
         self.sock = None
+        self.nickname = "Unnamed Liar"
 
     def parse_arguments(self, argv):
         try:
-            opts, args = getopt.getopt(argv, "hs:c:p:", ["server", "client=", "port="])
+            opts, args = getopt.getopt(argv, "hs:c:p:n:", ["server", "client=", "port=", "nickname="])
         except getopt.GetoptError:
             logging.error("Incorrect options given as arguments")
             sys.exit(2)
         for opt, arg in opts:
             if opt == '-h':
-                logging.info("pyliar.py [--server] [[--client=<ip_server>] [--port=<port>]]")
+                logging.info("pyliar.py [--server] [[--client=<ip_server>] [--port=<port>] [--nickname=<nick>]]")
                 logging.info("Default mode : server")
                 sys.exit()
             elif opt in ('-s', '--server'):
@@ -40,6 +41,8 @@ class PyLiar:
             elif opt in ('-c', '--client'):
                 self.remote_addr = arg
                 self.server = False
+            elif opt in ('-n', '--nickname'):
+                self.nickname = arg
             elif opt in ('-p', '--port'):
                 self.port = int(arg)
 
@@ -49,4 +52,4 @@ if __name__ == '__main__':
     if pyliar_inst.server:
         liar_serv = Server(pyliar_inst.port)
     else:
-        liar_client = Player(pyliar_inst.remote_addr, pyliar_inst.port)
+        liar_client = Player(pyliar_inst.remote_addr, pyliar_inst.port, pyliar_inst.nickname)

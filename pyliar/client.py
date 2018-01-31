@@ -11,6 +11,7 @@ class Client:
         self.handle_connection()
 
     def handle_connection(self):
+        logging.debug("New Client")
         logging.debug("Connecting to remote server '{server}:{port}'".format(server=self.remote_addr, port=self.port))
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.connect((self.remote_addr, self.port))

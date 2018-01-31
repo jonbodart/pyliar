@@ -10,8 +10,10 @@ DICE_AMOUNT = 5
 
 class Player(Client):
 
-    def __init__(self, remote_addr, port):
+    def __init__(self, remote_addr, port, nickname):
+        logging.info("Welcome {}".format(nickname))
         super().__init__(remote_addr, port)
+        self.nickname = nickname
         self.hand = None
         self.listen_messages()
         # self.hand = numpy.random.randint(1, 6, size=DICE_AMOUNT)
