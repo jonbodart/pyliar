@@ -12,6 +12,19 @@ def decode_message(data):
         return None
 
 
+def create_message(input):
+    child_classes = Message.__subclasses__()
+    for child in child_classes:
+        matches = child.regex.findall(input)
+        if matches:
+            # FIXME !! Should instanciate child with array of matched stuffs
+            logging.debug("matched: {}".format(child))
+            logging.debug("matches: {}".format(matches[0]))
+            return child(matches[0])
+    return None
+
+
+
 class Message:
     regex = None
 
@@ -28,14 +41,15 @@ class Message:
     def is_type(self, type):
         return self.type == type
 
-class GuessMessage(Message):
-    regex = r"^(\d+)[\.,:;x](\d+).*"
 
-    def __init__(self, amount, value):
+class GuessMessage(Message):
+    regex = re.compile(r"^(\d+)[\.,:;x](\d+).*")
+
+    def __init__(self, array):
         super().__init__()
         self.type = 'GUESS'
-        self.amount = amount
-        self.value = value
+        self.amount = array[0]
+        self.value = array[1]
 
     def to_string(self):
         common_part = super().to_string()
@@ -45,12 +59,12 @@ class GuessMessage(Message):
 
 
 class HandMessage(Message):
-    regex = r"^hand.*"
+    regex = re.compile(r"^hand.*")
 
-    def __init__(self, hand):
+    def __init__(self, array):
         super().__init__()
         self.type = 'HAND'
-        self.hand = hand
+        self.hand = array[0]
 
     def to_string(self):
         common_part = super().to_string()
@@ -58,8 +72,8 @@ class HandMessage(Message):
 
 
 class StartMessage(Message):
-    regex = r"^start\s+(?:game|pyliar).*"
+    regex = re.compile(r"^(?:start|play)\s+(?:game|pyliar|liar).*")
 
-    def __init__(self):
+    def __init__(self, array):
         super().__init__()
         self.type = 'START'

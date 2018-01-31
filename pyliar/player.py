@@ -36,12 +36,11 @@ class Player(Client):
 
                 elif x is sys.stdin:
                     # handle standard input
-                    stuff = sys.stdin.readline()
-                    logging.debug("You typed: {}...".format(stuff))
+                    input = sys.stdin.readline()
+                    logging.debug("You typed: {}...".format(input))
                     # TODO decode 'stuff' and send related message
 
                     logging.debug("")
-                    logging.debug("SENDING START GAME ANYWAY !!")
-                    message = StartMessage()
-                    logging.debug(message.to_string())
+                    message = create_message(input)
+                    logging.debug("message typed: {}".format(message.to_string()))
                     self.send_message(message)
