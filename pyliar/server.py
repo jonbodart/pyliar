@@ -11,6 +11,13 @@ class Game:
         self.game_started = False
         self.player_amount = 0
 
+    def start_game(self):
+        self.game_started = True
+        logging.info("----------------------------")
+        logging.info("Let's play The Liar's Dice !")
+        logging.info("----------------------------")
+        # TODO get access to players
+        # Send them a new hand
 
 class Server:
 
@@ -18,11 +25,24 @@ class Server:
         self.game.player_amount += 1
         logging.debug("I am in the child thread... - amount {}".format(self.game.player_amount))
         while True:
-            data = client_socket.recv(1024)
+            data = client_socket.recv(2048)
             logging.info("Received a chunk '{data}'".format(data=data))
             message = decode_message(data)
             if message is not None:
-                logging.info("Received the following message {message}".format(message=message.to_string()))
+                self.handle_client_message(message)
+            else:
+                logging.info("Received the following data {}".format(message))
+
+    def handle_client_message(self, msg):
+        logging.info("Received the following message: {}".format(msg.to_string()))
+        logging.info("{}".format(msg.type))
+        if msg.isType('START'):
+            logging.info("Start message received from ...")
+            self.game.start_game()
+        # elif: # TODO other type of message
+        else:
+            logging.info("This is an unhandled message.. For now !")
+            logging.info("What about handling it Jonathan ?!")
 
     def __init__(self, port):
         self.port = port
@@ -47,7 +67,7 @@ class Server:
                 if not self.game.game_started:
                     self.handle_new_connections()
                 else:
-                    logging.debug("Here I am...")
+                    logging.debug("Handle game started and new connection detected.")
 
     def handle_new_connections(self):
         client_sock, client_address = self.sock.accept()

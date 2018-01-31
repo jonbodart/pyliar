@@ -12,9 +12,13 @@ class Player(Client):
 
     def __init__(self, remote_addr, port):
         super().__init__(remote_addr, port)
-        self.hand = numpy.random.randint(1, 6, size=DICE_AMOUNT)
-        logging.debug("New player. His hand is {hand}".format(hand=self.hand))
+        self.hand = None
         self.listen_messages()
+        # self.hand = numpy.random.randint(1, 6, size=DICE_AMOUNT)
+        # logging.debug("New player. His hand is {hand}".format(hand=self.hand))
+
+    def send_message(self, msg):
+        self.sock.send(pickle.dumps(msg))
 
     def listen_messages(self):
         exit_gracefully = False
@@ -31,6 +35,10 @@ class Player(Client):
                 elif x is sys.stdin:
                     # handle standard input
                     stuff = sys.stdin.readline()
-                    logging.debug("You typed: {}".format(stuff))
-                    message = HandMessage(self.hand)
-                    self.sock.send(message.to_message_string())
+                    logging.debug("You typed: {}...".format(stuff))
+                    # TODO decode 'stuff' and send related message
+
+                    logging.debug("")
+                    logging.debug("SENDING START GAME ANYWAY !!")
+                    message = StartMessage()
+                    self.send_message(message)

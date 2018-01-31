@@ -1,13 +1,14 @@
 import pickle
 import logging
 
+
 def decode_message(data):
     try:
         message = pickle.loads(data)
         return message
     except pickle.PickleError:
         logging.error("Could not deserialize the data : {data}".format(data=data))
-    return None
+        return None
 
 
 class Message:
@@ -21,6 +22,8 @@ class Message:
     def to_string(self):
         return "Type: {type}".format(type=self.type)
 
+    def isType(self, type):
+        return self.type == type
 
 class GuessMessage(Message):
     def __init__(self, amount, value):
@@ -43,3 +46,9 @@ class HandMessage(Message):
     def to_string(self):
         common_part = super().to_string()
         return "{common_part} - {hand}".format(common_part=common_part, hand=self.hand)
+
+
+class StartMessage(Message):
+    def __init__(self):
+        super().__init__()
+        self.type = 'START'
