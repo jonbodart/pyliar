@@ -34,7 +34,7 @@ class Server:
                 logging.info("This is not a recognized message...")
 
     def handle_client_message(self, msg):
-        if msg.isType('START'):
+        if msg.is_type('START'):
             logging.info("Start message received from ...")
             self.game.start_game()
         # elif: # TODO other type of message

@@ -1,5 +1,6 @@
 import pickle
 import logging
+import re
 
 
 def decode_message(data):
@@ -12,6 +13,8 @@ def decode_message(data):
 
 
 class Message:
+    regex = None
+
     def __init__(self):
         self.type = 'UNKN'
 
@@ -20,12 +23,14 @@ class Message:
         return message
 
     def to_string(self):
-        return "Type: {type}".format(type=self.type)
+        return "Type: {type}, regex: {r}".format(type=self.type, r=self.regex)
 
-    def isType(self, type):
+    def is_type(self, type):
         return self.type == type
 
 class GuessMessage(Message):
+    regex = r"^(\d+)[\.,:;x](\d+).*"
+
     def __init__(self, amount, value):
         super().__init__()
         self.type = 'GUESS'
@@ -34,10 +39,14 @@ class GuessMessage(Message):
 
     def to_string(self):
         common_part = super().to_string()
-        return "{common_part} - {amount},{value}".format(common_part=common_part, amount=self.amount, value=self.value)
+        return "{common_part} - {a}, {v}".format(common_part=common_part,
+                                                 a=self.amount,
+                                                 v=self.value)
 
 
 class HandMessage(Message):
+    regex = r"^hand.*"
+
     def __init__(self, hand):
         super().__init__()
         self.type = 'HAND'
@@ -49,6 +58,8 @@ class HandMessage(Message):
 
 
 class StartMessage(Message):
+    regex = r"^start\s+(?:game|pyliar).*"
+
     def __init__(self):
         super().__init__()
         self.type = 'START'

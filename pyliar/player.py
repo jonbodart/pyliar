@@ -43,4 +43,5 @@ class Player(Client):
                     logging.debug("")
                     logging.debug("SENDING START GAME ANYWAY !!")
                     message = StartMessage()
+                    logging.debug(message.to_string())
                     self.send_message(message)
