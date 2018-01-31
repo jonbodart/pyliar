@@ -26,21 +26,20 @@ class Server:
         logging.debug("I am in the child thread... - amount {}".format(self.game.player_amount))
         while True:
             data = client_socket.recv(2048)
-            logging.info("Received a chunk '{data}'".format(data=data))
             message = decode_message(data)
             if message is not None:
                 self.handle_client_message(message)
             else:
                 logging.info("Received the following data {}".format(message))
+                logging.info("This is not a recognized message...")
 
     def handle_client_message(self, msg):
-        logging.info("Received the following message: {}".format(msg.to_string()))
-        logging.info("{}".format(msg.type))
         if msg.isType('START'):
             logging.info("Start message received from ...")
             self.game.start_game()
         # elif: # TODO other type of message
         else:
+            logging.info("message received: {}".format(msg.to_string()))
             logging.info("This is an unhandled message.. For now !")
             logging.info("What about handling it Jonathan ?!")
 
