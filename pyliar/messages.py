@@ -12,10 +12,10 @@ def decode_message(data):
         return None
 
 
-def create_message(input):
+def create_message(str_in):
     child_classes = Message.__subclasses__()
     for child in child_classes:
-        matches = child.regex.findall(input)
+        matches = child.regex.findall(str_in)
         if matches:
             # FIXME !! Should instanciate child with array of matched stuffs
             logging.debug("matched: {}".format(child))
