@@ -2,6 +2,8 @@ import socket
 import logging
 import threading
 import select
+import errno
+from queue import Queue
 
 from messages import *
 
@@ -21,19 +23,34 @@ class Game:
 
 class Server:
 
+    def handle_disconnection(self, client_socket):
+        self.game.player_amount -= 1
+        logging.info("Client has disconnected ... / Remaining users : %d", self.game.player_amount)
+        self.client_sockets.remove(client_socket)
+        client_socket.close()
+
     def handle_client(self, client_socket):
         self.game.player_amount += 1
-        logging.debug("I am in the child thread... - amount {}".format(self.game.player_amount))
         while True:
             data = client_socket.recv(2048)
+            if not data:
+                break
             message = decode_message(data)
             if message is not None:
                 self.handle_client_message(message)
             else:
                 logging.info("Received the following data {}".format(message))
                 logging.info("This is not a recognized message...")
+        self.handle_disconnection(client_socket)
 
     def handle_client_message(self, msg):
+        """
+        Handle the messages received from clients.
+
+        :param msg: The received message from client.
+        :type msg: Message
+        :return: void
+        """
         if msg.is_type('START'):
             logging.info("Start message received from ...")
             self.game.start_game()
@@ -56,6 +73,7 @@ class Server:
         exit_gracefully = False
         self.client_sockets = [self.sock]
         while not exit_gracefully:
+            # Handling sockets events.
             readable, writable, errored = select.select(self.client_sockets, [], [])
             self.handle_sockets(readable)
         self.sock.close()
