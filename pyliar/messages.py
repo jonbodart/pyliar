@@ -30,6 +30,7 @@ class Message:
 
     def __init__(self):
         self.type = 'UNKN'
+        self.id = None
 
     def to_message_string(self):
         message = pickle.dumps(self)

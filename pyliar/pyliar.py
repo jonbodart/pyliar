@@ -23,7 +23,7 @@ class PyLiar:
         self.remote_addr = "127.0.0.1"
         self.port = self.DEFAULT_PORT
         self.sock = None
-        self.nickname = "Unnamed Liar"
+        self.nickname = None
 
     def parse_arguments(self, argv):
         try:

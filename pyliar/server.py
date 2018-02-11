@@ -3,7 +3,8 @@ import logging
 import threading
 import select
 import errno
-from queue import Queue
+import uuid
+import queue
 
 from messages import *
 
@@ -21,18 +22,19 @@ class Game:
         # TODO get access to players
         # Send them a new hand
 
-class Server:
+class Client(threading.Thread):
 
-    def handle_disconnection(self, client_socket):
-        self.game.player_amount -= 1
-        logging.info("Client has disconnected ... / Remaining users : %d", self.game.player_amount)
-        self.client_sockets.remove(client_socket)
-        client_socket.close()
+    def __init__ (self, playerID, client_socket, client_queue, main_queue):
+        threading.Thread.__init__(self)
+        logging.debug("Sending connection ACK to client")
+        self.playerID = playerID
+        self.client_socket = client_socket
+        self.queue = client_queue
+        self.main_queue = main_queue
 
-    def handle_client(self, client_socket):
-        self.game.player_amount += 1
+    def run(self):
         while True:
-            data = client_socket.recv(2048)
+            data = self.client_socket.recv(2048)
             if not data:
                 break
             message = decode_message(data)
@@ -41,7 +43,10 @@ class Server:
             else:
                 logging.info("Received the following data {}".format(message))
                 logging.info("This is not a recognized message...")
-        self.handle_disconnection(client_socket)
+
+        # Handle disconnection
+        logging.info("Client disconnected...")
+        self.client_socket.close()
 
     def handle_client_message(self, msg):
         """
@@ -52,17 +57,33 @@ class Server:
         :return: void
         """
         if msg.is_type('START'):
-            logging.info("Start message received from ...")
-            self.game.start_game()
+            logging.info("Start message received from ... {clientID}".format(clientID = self.playerID))
+            msg.id = self.playerID
+            try:
+                self.main_queue.put(msg, block=False)
+            except queue.Full:
+                logging.error("Could not send the message to the queue...")
         # elif: # TODO other type of message
         else:
             logging.info("message received: {}".format(msg.to_string()))
             logging.info("This is an unhandled message.. For now !")
             logging.info("What about handling it Jonathan ?!")
 
+
+
+class Server:
+
+    def handle_disconnection(self, client_socket):
+        self.game.player_amount -= 1
+
+    def handle_client(self, client_socket, playerID):
+        self.game.player_amount += 1
+
     def __init__(self, port):
         self.port = port
         self.game = Game()
+        self.main_queue = queue.Queue()
+        self.queues = dict()
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         server_address = ('localhost', self.port)
@@ -75,6 +96,7 @@ class Server:
         while not exit_gracefully:
             # Handling sockets events.
             readable, writable, errored = select.select(self.client_sockets, [], [])
+            logging.debug("Selected : %d - %d - %d",len(readable), len(writable), len(errored))
             self.handle_sockets(readable)
         self.sock.close()
 
@@ -87,11 +109,10 @@ class Server:
                     logging.debug("Handle game started and new connection detected.")
 
     def handle_new_connections(self):
+        playerID = uuid.uuid1()
+        client_queue = queue.Queue()
+        self.queues[playerID] = client_queue
         client_sock, client_address = self.sock.accept()
         logging.debug("Accepted connection from {}".format(client_address[0]))
-        client_handler = threading.Thread(
-            target=self.handle_client,
-            args=(client_sock,))
+        client_handler = Client(playerID, client_sock, client_queue, self.main_queue)
         client_handler.start()
-        self.client_sockets.append(client_sock)
-
