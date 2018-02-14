@@ -3,12 +3,9 @@
 import getopt
 import logging
 import sys
-import socket
-import pickle
 
-
-from server import Server
 from player import Player
+from server import Server
 
 
 class PyLiar:
@@ -45,6 +42,7 @@ class PyLiar:
                 self.nickname = arg
             elif opt in ('-p', '--port'):
                 self.port = int(arg)
+
 
 if __name__ == '__main__':
     pyliar_inst = PyLiar()

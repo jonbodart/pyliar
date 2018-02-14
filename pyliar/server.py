@@ -1,12 +1,11 @@
-import socket
-import logging
-import threading
-import select
-import errno
-import uuid
 import queue
+import select
+import socket
+import threading
+import uuid
 
 from messages import *
+
 
 class Game:
 
@@ -22,9 +21,10 @@ class Game:
         # TODO get access to players
         # Send them a new hand
 
+
 class Client(threading.Thread):
 
-    def __init__ (self, playerID, client_socket, client_queue, main_queue):
+    def __init__(self, playerID, client_socket, client_queue, main_queue):
         threading.Thread.__init__(self)
         logging.debug("Sending connection ACK to client")
         self.playerID = playerID
@@ -33,6 +33,7 @@ class Client(threading.Thread):
         self.main_queue = main_queue
 
     def run(self):
+        self.main_queue.put("Test from client")
         while True:
             data = self.client_socket.recv(2048)
             if not data:
@@ -70,7 +71,6 @@ class Client(threading.Thread):
             logging.info("What about handling it Jonathan ?!")
 
 
-
 class Server:
 
     def handle_disconnection(self, client_socket):
@@ -95,9 +95,13 @@ class Server:
         self.client_sockets = [self.sock]
         while not exit_gracefully:
             # Handling sockets events.
-            readable, writable, errored = select.select(self.client_sockets, [], [])
+            readable, writable, errored = select.select(self.client_sockets, [], [], 1)
             logging.debug("Selected : %d - %d - %d",len(readable), len(writable), len(errored))
-            self.handle_sockets(readable)
+            if len(readable) > 0:
+                self.handle_sockets(readable)
+            else:
+                item = self.main_queue.get(block=False)
+                logging.debug("Item value {}".format(item))
         self.sock.close()
 
     def handle_sockets(self, sockets):
@@ -116,3 +120,4 @@ class Server:
         logging.debug("Accepted connection from {}".format(client_address[0]))
         client_handler = Client(playerID, client_sock, client_queue, self.main_queue)
         client_handler.start()
+        client_queue.put("Test of queue")
